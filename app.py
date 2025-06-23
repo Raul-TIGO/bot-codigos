@@ -120,15 +120,15 @@ st.success("✅ Archivo cargado correctamente")
 
     # Sidebar para seleccionar fila y token
 st.sidebar.header("🧑‍🔧 Generador de Mensaje Individual")
-    idx = st.sidebar.selectbox("Selecciona un Técnico", df.index, format_func=lambda i: df.at[i, 'Nombre del Tecnico'])
-    token_manual = st.sidebar.text_input("🔐 Ingresa el Token manual", value="__________")
+idx = st.sidebar.selectbox("Selecciona un Técnico", df.index, format_func=lambda i: df.at[i, 'Nombre del Tecnico'])
+token_manual = st.sidebar.text_input("🔐 Ingresa el Token manual", value="__________")
 
     mensaje = generar_mensaje(df.loc[idx], token_manual)
     enlace = generar_enlace_whatsapp(df.loc[idx], mensaje)
 
 st.subheader("📄 Mensaje Generado")
-    st.text_area("Puedes copiar este mensaje:", value=mensaje, height=300)
-    st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace})", unsafe_allow_html=True)
+st.text_area("Puedes copiar este mensaje:", value=mensaje, height=300)
+st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace})", unsafe_allow_html=True)
 
     # Exportar todo
     df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
