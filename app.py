@@ -13,24 +13,23 @@ st.set_page_config(page_title="Bot de Códigos Técnicos – Tigo Panamá", layo
 st.title("🤖 Bot de Generación de Códigos Técnicos – Tigo Panamá")
 st.markdown("Sube tu archivo Excel (.xlsx) generado desde Microsoft Forms versión **Ver3.0** para generar los códigos automáticamente.")
 
-# Subir archivo Excel
 archivo = st.file_uploader("📂 Subir archivo Ver3.0 (.xlsx)", type="xlsx")
 
 if archivo:
     df = pd.read_excel(archivo)
 
     if 'Nombre del cliente' not in df.columns:
-        df['Nombre del cliente'] = df.iloc[:, 10]  # Columna K
+        df['Nombre del cliente'] = df.iloc[:, 10]
     if 'Diagnóstico' not in df.columns:
-        df['Diagnóstico'] = df.iloc[:, 11]  # Columna L
+        df['Diagnóstico'] = df.iloc[:, 11]
     if 'Tipo de Escalamiento' not in df.columns:
-        df['Tipo de Escalamiento'] = df.iloc[:, 17]  # Columna R
+        df['Tipo de Escalamiento'] = df.iloc[:, 17]
     if 'Razón de Escalamiento' not in df.columns:
         df['Razón de Escalamiento'] = df.apply(
             lambda row: row.iloc[20] if pd.notna(row.iloc[20]) else row.iloc[19], axis=1
         )
     if 'Radio' not in df.columns:
-        df['Radio'] = df.iloc[:, -1]  # Última columna
+        df['Radio'] = df.iloc[:, -1]
 
     columnas_requeridas = [
         'Carro', 'Nombre del Tecnico', 'Contratista', 'Nombre del cliente',
@@ -140,7 +139,9 @@ if archivo:
         cols[1].write(row['Nombre del Tecnico'])
         cols[2].write(row['Radio'])
         cols[3].write(row['TipoSolicitud'])
-        cols[4].markdown(f"**[{row['CodigoGenerado']}]({generar_enlace_whatsapp(row, generar_mensaje(row))})**")
+        mensaje_prev = generar_mensaje(row)
+        link = generar_enlace_whatsapp(row, mensaje_prev)
+        cols[4].markdown(f"**[{row['CodigoGenerado']}]({link})**")
         if not row['Enviado']:
             if cols[5].button("📲 Enviar", key=f"btn_{i}"):
                 st.session_state['mensaje_idx'] = i
@@ -171,3 +172,4 @@ if archivo:
         file_name="Mensajes_Procesados.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
