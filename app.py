@@ -133,30 +133,10 @@ if archivo:
 
     st.success("✅ Archivo cargado correctamente")
 
-    st.sidebar.header("🧑‍🔧 Generador de Mensaje Individual")
-    if len(df_filtrado) == 0:
-        st.sidebar.info("✅ Todos los mensajes ya han sido enviados o no hay registros para mostrar.")
-    else:
-        idx = st.sidebar.selectbox("Selecciona un Técnico", df_filtrado.index, format_func=lambda i: df_filtrado.at[i, 'Nombre del Tecnico'])
-        token_manual = st.sidebar.text_input("🔐 Ingresa el Token manual", value="__________")
-        mensaje = generar_mensaje(df.loc[idx], token_manual)
-        enlace = generar_enlace_whatsapp(df.loc[idx], mensaje)
-
-        st.subheader("📄 Mensaje Generado")
-        st.text_area("Puedes copiar este mensaje:", value=mensaje, height=300)
-        st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace})", unsafe_allow_html=True)
-
-        enviado = st.checkbox("✅ Marcar como enviado")
-        if enviado:
-            df.at[idx, 'Enviado'] = True
-
-    df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
-    df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
-
     st.subheader("📋 Vista previa de todos los mensajes")
-    click_idx = st.radio("📌 Selecciona un código para ver el mensaje:", df.index, format_func=lambda i: df.at[i, 'CodigoGenerado'], horizontal=True)
+    click_idx = st.radio("📌 Selecciona un código para ver el mensaje:", df_filtrado.index, format_func=lambda i: df_filtrado.at[i, 'CodigoGenerado'], horizontal=True)
 
-    row = df.loc[click_idx]
+    row = df_filtrado.loc[click_idx]
     token_manual_preview = st.text_input("🔐 Token para este mensaje seleccionado", value="__________", key="token_preview")
     mensaje_click = generar_mensaje(row, token_manual_preview)
     enlace_click = generar_enlace_whatsapp(row, mensaje_click)
@@ -167,6 +147,11 @@ if archivo:
     enviado_click = st.checkbox("✅ Marcar como enviado (mensaje seleccionado)", key="marcado_individual")
     if enviado_click:
         df.at[click_idx, 'Enviado'] = True
+
+    df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
+    df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
+
+    st.dataframe(df[['Fecha', 'Nombre del Tecnico', 'Radio', 'TipoSolicitud', 'CodigoGenerado', 'Enviado']])
 
     st.subheader("📤 Descargar todos los mensajes")
     output = BytesIO()
