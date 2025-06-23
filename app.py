@@ -94,7 +94,7 @@ df['CodigoGenerado'] = df.apply(
     lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
     axis=1
 )
-    def generar_mensaje(row, token="__________"):
+def generar_mensaje(row, token="__________"):
         return f"""🚐 # de Carro: {row.get('Carro', '')}
 👷Tecnico: {row.get('Nombre del Tecnico', '')} 
 📲Contratista: {row.get('Contratista', '')}
