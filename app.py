@@ -118,19 +118,38 @@ def generar_enlace_whatsapp(row, mensaje):
 
 st.success("✅ Archivo cargado correctamente")
 
-    # Sidebar para seleccionar fila y token
+# Sidebar para seleccionar fila y token
 st.sidebar.header("🧑‍🔧 Generador de Mensaje Individual")
 idx = st.sidebar.selectbox("Selecciona un Técnico", df.index, format_func=lambda i: df.at[i, 'Nombre del Tecnico'])
 token_manual = st.sidebar.text_input("🔐 Ingresa el Token manual", value="__________")
-    mensaje = generar_mensaje(df.loc[idx], token_manual)
-    enlace = generar_enlace_whatsapp(df.loc[idx], mensaje)
+
+# Generar mensaje individual y enlace
+mensaje = generar_mensaje(df.loc[idx], token_manual)
+enlace = generar_enlace_whatsapp(df.loc[idx], mensaje)
+
+# Mostrar mensaje generado
 st.subheader("📄 Mensaje Generado")
 st.text_area("Puedes copiar este mensaje:", value=mensaje, height=300)
 st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace})", unsafe_allow_html=True)
-    # Exportar todo
-    df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
-    df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
-st.subheader("📤 Descargar todos los mensajes")
 
-    
-       
+# Generar mensajes en lote para exportar
+df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
+df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
+
+# Mostrar tabla completa
+st.subheader("📋 Todos los mensajes generados")
+st.dataframe(df[['Fecha', 'Nombre del Tecnico', 'TipoSolicitud', 'CodigoGenerado', 'MensajeGenerado', 'WhatsAppLink']])
+
+# Exportar todos los mensajes a Excel
+from io import BytesIO
+output = BytesIO()
+df.to_excel(output, index=False, engine='openpyxl')
+output.seek(0)
+
+st.subheader("📤 Descargar todos los mensajes")
+st.download_button(
+    label="⬇️ Descargar Excel con resultados",
+    data=output,
+    file_name="Mensajes_Procesados.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)   
