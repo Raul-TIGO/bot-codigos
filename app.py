@@ -71,7 +71,9 @@ if archivo:
     if 'Enviado' not in df.columns:
         df['Enviado'] = False  # columna nueva para marcar si ya fue enviado
 
-    df_no_enviados = df[df['Enviado'] == False]
+    mostrar_todos = st.sidebar.checkbox("👁️ Mostrar registros ya enviados", value=False)
+
+    df_filtrado = df if mostrar_todos else df[df['Enviado'] == False]
 
     def generar_codigo(tipo, fecha, tecnico, secuencia):
         fecha = pd.to_datetime(fecha)
@@ -133,10 +135,10 @@ if archivo:
     st.success("✅ Archivo cargado correctamente")
 
     st.sidebar.header("🧑‍🔧 Generador de Mensaje Individual")
-    if len(df_no_enviados) == 0:
-        st.sidebar.info("✅ Todos los mensajes ya han sido enviados.")
+    if len(df_filtrado) == 0:
+        st.sidebar.info("✅ Todos los mensajes ya han sido enviados o no hay registros para mostrar.")
     else:
-        idx = st.sidebar.selectbox("Selecciona un Técnico", df_no_enviados.index, format_func=lambda i: df_no_enviados.at[i, 'Nombre del Tecnico'])
+        idx = st.sidebar.selectbox("Selecciona un Técnico", df_filtrado.index, format_func=lambda i: df_filtrado.at[i, 'Nombre del Tecnico'])
         token_manual = st.sidebar.text_input("🔐 Ingresa el Token manual", value="__________")
         mensaje = generar_mensaje(df.loc[idx], token_manual)
         enlace = generar_enlace_whatsapp(df.loc[idx], mensaje)
@@ -151,6 +153,9 @@ if archivo:
 
     df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
     df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
+
+    st.subheader("📋 Vista previa de todos los mensajes")
+    st.dataframe(df[['Fecha', 'Nombre del Tecnico', 'Radio', 'TipoSolicitud', 'CodigoGenerado', 'Enviado']])
 
     st.subheader("📤 Descargar todos los mensajes")
     output = BytesIO()
