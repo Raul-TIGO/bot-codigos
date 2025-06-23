@@ -54,29 +54,46 @@ if archivo:
         else:
             return "Otro"
 
-    def generar_codigo(tipo, fecha, tecnico, secuencia=1):
-        fecha = pd.to_datetime(fecha)
-        suma = fecha.day + fecha.month
-        inicial_mes = fecha.strftime('%b')[0].upper()
-        iniciales_tecnico = ''.join([n[0].upper() for n in tecnico.split()])
-        base = f"{suma:02d}{inicial_mes}{iniciales_tecnico}{secuencia}"
-        if tipo == "MCO":
-            return f"C4130{base}"
-        elif tipo == "Recableado":
-            return f"RC4130{base}"
-        elif tipo == "TAP/NAP":
-            return f"4139{base}"
-        else:
-            return f"CODIGO{base}"
+def obtener_iniciales(nombre):
+    return ''.join([n[0].upper() for n in str(nombre).split()])
 
-    if 'Start time' in df.columns:
-        df['Fecha'] = pd.to_datetime(df['Start time'])
+# 👉 Crear columna con iniciales
+df['InicialesTecnico'] = df['Nombre del Tecnico'].apply(obtener_iniciales)
+
+# 👉 Generar fecha si no viene incluida
+if 'Start time' in df.columns:
+    df['Fecha'] = pd.to_datetime(df['Start time'])
+else:
+    df['Fecha'] = datetime.today()
+
+# 👉 Clasificar tipo de solicitud
+df['TipoSolicitud'] = df['Razón de Escalamiento'].apply(clasificar_codigo)
+
+# 👉 Ordenar y generar secuencia única por técnico por día
+df = df.sort_values(by='Fecha')
+df['Secuencia'] = df.groupby(['Fecha', 'InicialesTecnico']).cumcount() + 1
+
+# 🏷️ Generador de código técnico con secuencia real
+def generar_codigo(tipo, fecha, tecnico, secuencia):
+    fecha = pd.to_datetime(fecha)
+    suma = fecha.day + fecha.month
+    inicial_mes = fecha.strftime('%b')[0].upper()
+    iniciales_tecnico = obtener_iniciales(tecnico)
+    base = f"{suma:02d}{inicial_mes}{iniciales_tecnico}{secuencia}"
+    if tipo == "MCO":
+        return f"C4130{base}"
+    elif tipo == "Recableado":
+        return f"RC4130{base}"
+    elif tipo == "TAP/NAP":
+        return f"4139{base}"
     else:
-        df['Fecha'] = datetime.today()
+        return f"CODIGO{base}"
 
-    df['TipoSolicitud'] = df['Razón de Escalamiento'].apply(clasificar_codigo)
-    df['CodigoGenerado'] = df.apply(lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico']), axis=1)
-
+# 👉 Aplicar el generador de códigos
+df['CodigoGenerado'] = df.apply(
+    lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
+    axis=1
+)
     def generar_mensaje(row, token="__________"):
         return f"""🚐 # de Carro: {row.get('Carro', '')}
 👷Tecnico: {row.get('Nombre del Tecnico', '')} 
