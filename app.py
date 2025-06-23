@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from urllib.parse import quote
+from io import BytesIO
+
 
 st.set_page_config(page_title="Bot de Códigos Técnicos – Tigo Panamá", layout="wide")
 
@@ -116,9 +118,6 @@ if archivo:
     df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
 
     st.subheader("📤 Descargar todos los mensajes")
-    st.download_button(
-        label="⬇️ Descargar Excel con resultados",
-        data=df.to_excel(index=False, engine='openpyxl'),
-        file_name="Mensajes_Procesados.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+
+    
+       
