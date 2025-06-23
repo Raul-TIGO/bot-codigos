@@ -116,7 +116,7 @@ def generar_enlace_whatsapp(row, mensaje):
         mensaje_codificado = quote(mensaje)
         return f"https://wa.me/507{numero}?text={mensaje_codificado}"
 
-    st.success("✅ Archivo cargado correctamente")
+st.success("✅ Archivo cargado correctamente")
 
     # Sidebar para seleccionar fila y token
     st.sidebar.header("🧑‍🔧 Generador de Mensaje Individual")
