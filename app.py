@@ -67,6 +67,11 @@ if archivo:
     df = df.sort_values(by='Fecha')
     df['Secuencia'] = df.groupby(['Fecha', 'InicialesTecnico']).cumcount() + 1
 
+    df['CodigoGenerado'] = df.apply(
+        lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
+        axis=1
+    )
+
     if 'Enviado' not in df.columns:
         df['Enviado'] = False
 
@@ -87,11 +92,6 @@ if archivo:
             return f"4139{base}"
         else:
             return f"CODIGO{base}"
-
-    df['CodigoGenerado'] = df.apply(
-        lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
-        axis=1
-    )
 
     def generar_mensaje(row, token="__________"):
         return f"""🚐 # de Carro: {row.get('Carro', '')}
@@ -172,4 +172,3 @@ if archivo:
         file_name="Mensajes_Procesados.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
