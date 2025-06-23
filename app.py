@@ -134,24 +134,33 @@ if archivo:
     st.success("✅ Archivo cargado correctamente")
 
     st.subheader("📋 Vista previa de todos los mensajes")
-    click_idx = st.radio("📌 Selecciona un código para ver el mensaje:", df_filtrado.index, format_func=lambda i: df_filtrado.at[i, 'CodigoGenerado'], horizontal=True)
+    for i, row in df_filtrado.iterrows():
+        cols = st.columns([2, 2, 2, 2, 2, 2])
+        cols[0].write(row['Fecha'].strftime('%Y-%m-%d'))
+        cols[1].write(row['Nombre del Tecnico'])
+        cols[2].write(row['Radio'])
+        cols[3].write(row['TipoSolicitud'])
+        cols[4].write(row['CodigoGenerado'])
+        if not row['Enviado']:
+            if cols[5].button("📲 Enviar", key=f"btn_{i}"):
+                st.session_state['mensaje_idx'] = i
+                df.at[i, 'Enviado'] = True
+        else:
+            cols[5].checkbox("✅ Enviado", value=True, disabled=True, key=f"chk_{i}")
 
-    row = df_filtrado.loc[click_idx]
-    token_manual_preview = st.text_input("🔐 Token para este mensaje seleccionado", value="__________", key="token_preview")
-    mensaje_click = generar_mensaje(row, token_manual_preview)
-    enlace_click = generar_enlace_whatsapp(row, mensaje_click)
+    if 'mensaje_idx' in st.session_state:
+        i = st.session_state['mensaje_idx']
+        row = df.loc[i]
+        token_manual = st.text_input("🔐 Ingresa el Token manual", value="__________", key=f"token_{i}")
+        mensaje = generar_mensaje(row, token_manual)
+        enlace = generar_enlace_whatsapp(row, mensaje)
 
-    st.text_area("📩 Mensaje generado del código seleccionado:", value=mensaje_click, height=300)
-    st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace_click})", unsafe_allow_html=True)
-
-    enviado_click = st.checkbox("✅ Marcar como enviado (mensaje seleccionado)", key="marcado_individual")
-    if enviado_click:
-        df.at[click_idx, 'Enviado'] = True
+        st.subheader("📄 Mensaje Generado")
+        st.text_area("Puedes copiar este mensaje:", value=mensaje, height=300)
+        st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace})", unsafe_allow_html=True)
 
     df['MensajeGenerado'] = df.apply(lambda row: generar_mensaje(row), axis=1)
     df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
-
-    st.dataframe(df[['Fecha', 'Nombre del Tecnico', 'Radio', 'TipoSolicitud', 'CodigoGenerado', 'Enviado']])
 
     st.subheader("📤 Descargar todos los mensajes")
     output = BytesIO()
