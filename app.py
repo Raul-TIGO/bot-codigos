@@ -111,7 +111,7 @@ def generar_mensaje(row, token="__________"):
 🧾 Código Técnico: {row['CodigoGenerado']}
 ⚠️ *Recuerda ingresar el Token antes de enviar*"""
 
-    def generar_enlace_whatsapp(row, mensaje):
+def generar_enlace_whatsapp(row, mensaje):
         numero = str(row.get('Radio', '')).replace(" ", "").replace("+", "")
         mensaje_codificado = quote(mensaje)
         return f"https://wa.me/507{numero}?text={mensaje_codificado}"
