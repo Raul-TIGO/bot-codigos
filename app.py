@@ -140,7 +140,7 @@ if archivo:
         cols[1].write(row['Nombre del Tecnico'])
         cols[2].write(row['Radio'])
         cols[3].write(row['TipoSolicitud'])
-        cols[4].write(row['CodigoGenerado'])
+        cols[4].markdown(f"**[{row['CodigoGenerado']}]({generar_enlace_whatsapp(row, generar_mensaje(row))})**")
         if not row['Enviado']:
             if cols[5].button("📲 Enviar", key=f"btn_{i}"):
                 st.session_state['mensaje_idx'] = i
