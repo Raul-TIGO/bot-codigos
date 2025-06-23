@@ -67,17 +67,6 @@ if archivo:
     df = df.sort_values(by='Fecha')
     df['Secuencia'] = df.groupby(['Fecha', 'InicialesTecnico']).cumcount() + 1
 
-    df['CodigoGenerado'] = df.apply(
-        lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
-        axis=1
-    )
-
-    if 'Enviado' not in df.columns:
-        df['Enviado'] = False
-
-    mostrar_todos = st.sidebar.checkbox("👁️ Mostrar registros ya enviados", value=False)
-    df_filtrado = df if mostrar_todos else df[df['Enviado'] == False]
-
     def generar_codigo(tipo, fecha, tecnico, secuencia):
         fecha = pd.to_datetime(fecha)
         suma = fecha.day + fecha.month
@@ -92,6 +81,17 @@ if archivo:
             return f"4139{base}"
         else:
             return f"CODIGO{base}"
+
+    df['CodigoGenerado'] = df.apply(
+        lambda row: generar_codigo(row['TipoSolicitud'], row['Fecha'], row['Nombre del Tecnico'], row['Secuencia']),
+        axis=1
+    )
+
+    if 'Enviado' not in df.columns:
+        df['Enviado'] = False
+
+    mostrar_todos = st.sidebar.checkbox("👁️ Mostrar registros ya enviados", value=False)
+    df_filtrado = df if mostrar_todos else df[df['Enviado'] == False]
 
     def generar_mensaje(row, token="__________"):
         return f"""🚐 # de Carro: {row.get('Carro', '')}
@@ -139,9 +139,8 @@ if archivo:
         cols[1].write(row['Nombre del Tecnico'])
         cols[2].write(row['Radio'])
         cols[3].write(row['TipoSolicitud'])
-        mensaje_prev = generar_mensaje(row)
-        link = generar_enlace_whatsapp(row, mensaje_prev)
-        cols[4].markdown(f"**[{row['CodigoGenerado']}]({link})**")
+        if cols[4].button(f"📄 {row['CodigoGenerado']}", key=f"ver_{i}"):
+            st.session_state['mensaje_idx'] = i
         if not row['Enviado']:
             if cols[5].button("📲 Enviar", key=f"btn_{i}"):
                 st.session_state['mensaje_idx'] = i
