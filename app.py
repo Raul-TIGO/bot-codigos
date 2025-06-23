@@ -69,7 +69,7 @@ if archivo:
     df['Secuencia'] = df.groupby(['Fecha', 'InicialesTecnico']).cumcount() + 1
 
     if 'Enviado' not in df.columns:
-        df['Enviado'] = False  # columna nueva para marcar si ya fue enviado
+        df['Enviado'] = False
 
     mostrar_todos = st.sidebar.checkbox("👁️ Mostrar registros ya enviados", value=False)
 
@@ -155,7 +155,16 @@ if archivo:
     df['WhatsAppLink'] = df.apply(lambda row: generar_enlace_whatsapp(row, row['MensajeGenerado']), axis=1)
 
     st.subheader("📋 Vista previa de todos los mensajes")
-    st.dataframe(df[['Fecha', 'Nombre del Tecnico', 'Radio', 'TipoSolicitud', 'CodigoGenerado', 'Enviado']])
+    click_idx = st.radio("📌 Selecciona un código para ver el mensaje:", df.index, format_func=lambda i: df.at[i, 'CodigoGenerado'], horizontal=True)
+
+    # Actualizar mensaje al hacer clic
+    row = df.loc[click_idx]
+    token_manual_preview = st.text_input("🔐 Token para este mensaje", value="__________", key="token_preview")
+    mensaje_click = generar_mensaje(row, token_manual_preview)
+    enlace_click = generar_enlace_whatsapp(row, mensaje_click)
+
+    st.text_area("📩 Mensaje seleccionado:", value=mensaje_click, height=300)
+    st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace_click})", unsafe_allow_html=True)
 
     st.subheader("📤 Descargar todos los mensajes")
     output = BytesIO()
