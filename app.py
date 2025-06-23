@@ -72,7 +72,6 @@ if archivo:
         df['Enviado'] = False
 
     mostrar_todos = st.sidebar.checkbox("👁️ Mostrar registros ya enviados", value=False)
-
     df_filtrado = df if mostrar_todos else df[df['Enviado'] == False]
 
     def generar_codigo(tipo, fecha, tecnico, secuencia):
@@ -157,14 +156,17 @@ if archivo:
     st.subheader("📋 Vista previa de todos los mensajes")
     click_idx = st.radio("📌 Selecciona un código para ver el mensaje:", df.index, format_func=lambda i: df.at[i, 'CodigoGenerado'], horizontal=True)
 
-    # Actualizar mensaje al hacer clic
     row = df.loc[click_idx]
-    token_manual_preview = st.text_input("🔐 Token para este mensaje", value="__________", key="token_preview")
+    token_manual_preview = st.text_input("🔐 Token para este mensaje seleccionado", value="__________", key="token_preview")
     mensaje_click = generar_mensaje(row, token_manual_preview)
     enlace_click = generar_enlace_whatsapp(row, mensaje_click)
 
-    st.text_area("📩 Mensaje seleccionado:", value=mensaje_click, height=300)
+    st.text_area("📩 Mensaje generado del código seleccionado:", value=mensaje_click, height=300)
     st.markdown(f"[📲 Abrir WhatsApp con mensaje generado]({enlace_click})", unsafe_allow_html=True)
+
+    enviado_click = st.checkbox("✅ Marcar como enviado (mensaje seleccionado)", key="marcado_individual")
+    if enviado_click:
+        df.at[click_idx, 'Enviado'] = True
 
     st.subheader("📤 Descargar todos los mensajes")
     output = BytesIO()
